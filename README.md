@@ -26,7 +26,7 @@ the chance of being attacked by any bad actor.
 
 As just one example on how important it is to keep public resources updated and secure, it was reported
 that One of the hacks suffered by LastPass happened because one of their engineers had his Plex Server
-Publicly accessible from the internet and wasn't up-to-date (**TODO add link to lastpass hack**).
+Publicly accessible from the internet and wasn't up-to-date ((reference for more details)[https://thehackernews.com/2023/03/lastpass-hack-engineers-failure-to.html]).
 
 **The objective is to have the same VPN-like features, but without any public resources that
 we need to maintain**. Since any entity that will receive the TCP/UDP connection request needs to be public,
@@ -50,14 +50,13 @@ The following section shows how to set it up.
 
 ## Cloudflare Account Setup
 
-Beginning with the Cloudflare account, which you can create [here](TODO-LINK-TO-CLOUDFLARE)
+Beginning with the Cloudflare account, which you can create [here](https://dash.cloudflare.com/sign-up)
 you need nothing more than an email. You also don't need a registered domain name to
 follow this tutorial. Just enable MFA to play it safe.
 
 After that, click on the link as shown below to access the Zero Trust dashboard.
 
-<!-- TODO set max width -->
-![](assets/cloudflare-zero-trust-link.png)
+<p align="center"><img src="assets/cloudflare-zero-trust-link.png" width="700"/></p>
 
 If it is the first time you are accessing this, you will be prompted to create an organization.
 This is just a way Cloudflare uses to manage users and access rules in general. You can configure
@@ -113,8 +112,7 @@ Remember to change this to the appropriate one for you.
 With all configured, now it is just a matter of running `cd scripts/ && bash setup-cloudflare-tunnel.sh`.
 If everything works fine, you should see an output like the following one:
 
-<!-- TODO set max width -->
-![](assets/script-output.png)
+<p align="center"><img src="assets/script-output.png" width="500"/></p>
 
 And you can confirm the tunnel and network rules creation on the Cloudflare Zero Trust console as well:
 
@@ -148,7 +146,7 @@ Now you have the `Cloudflare -> Server` part of the flow configured. The only pa
 ## WARP Client
 
 As many VPNs, Cloudflare also requires the usage of a software installed in the client to be properly configured.
-This software is called Cloudflare WARP. You can install it from [here](TODO-LINK-TO-WARP).
+This software is called Cloudflare WARP. You can install it from [here](https://1.1.1.1/).
 
 After installing it, you need to enroll the device to the Cloudflare Zero Trust organization you created earlier.
 
@@ -164,7 +162,7 @@ For that, follow those instructions:
 | --- | --- |
 | Go to the WARP client settings on the Cloudflare Zero Trust dashboard | ![](assets/cloudflare-warp-device-1.png) |
 | Click on Manage Device Erollment Permissions | ![](assets/cloudflare-warp-device-2.png) |
-| Configure an `allow` rule for your own email. This means that a device that tries to logi via WARP into your organization using your email and succeeds should be allowed in the organization | ![](assets/cloudflare-warp-device-3.png) |
+| Configure an `allow` rule for your own email. This means that a device that tries to login via WARP into your organization using your email and succeeds should be allowed in the organization | ![](assets/cloudflare-warp-device-3.png) |
 
 ### Connect client
 
@@ -173,8 +171,7 @@ or via the WARP UI, going to Preferences and the Account tab.
 
 With a successful login, the pop-up from Cloudflare WARP should show this:
 
-<!-- TODO set max width -->
-![](assets/cloudflare-warp-on.png)
+<p align="center"><img src="assets/cloudflare-warp-on.png" width="400"/></p>
 
 And with that, your traffic should be already going through the connector, instead of directly to the destination.
 You can also confirm this by going to any website that prints out your ip and geo-location properties.
@@ -186,12 +183,18 @@ Your should see the ip and geo-location from the connector, not form the client 
 
 Although Cloudflare has some support to terraform, it certainly doesn't cover everything.
 Currently we have two ways to manage tunnels on Cloudflare: by local configuration or remotely managed via Cloudflare.
-The later is more convenient as it allows us to manage all connectors associated with a tunnel remotely and
-allows us to avoid adhoc configuration per connector. It is also the [recommended way](TODO-LINK-CONNECTOR-RECOMENDS) by Cloudflare
+The latter is more convenient as it allows us to manage all connectors associated with a tunnel remotely and
+allows us to avoid adhoc configuration per connector. It is also the [recommended way](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/tunnel-permissions/) by Cloudflare
 to managing connectors.
 
-> You can see more differences between the management strategies [here](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/tunnel-permissions/)
-> Also, Whenever you deploy a connector without specifying a configuration file (as show by the instructions from the Cloudflare dashboard),
+> For some reason, Cloudflare docs mentions the existing of "a new way" to manage connectors only in one page about [tunnel permissions](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/tunnel-permissions/).
+> The Instructions points you to [installation docs](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/tunnel-guide/) with installation options via the UI or configuration file.
+> <p align="center"><img src="assets/cloudflare-new-old-tunnel-config.png" width="600"/></p>
+> Not once it is mentioned that the creation via the UI provides remote configuration capabilities and that this way is the new one to manage connectors. Needless to say, the documentation is confusing about this and requires some updates.
+>
+> &nbsp;
+>
+> So, to be clear, whenever you deploy a connector via the UI (without specifying a configuration file), as show by the instructions from the Cloudflare dashboard,
 > you are deploying a remotely-manage connector
 
 The important takeaway is: if you try to deploy a locally managed connector, you need, for some still unknown reason 🤷‍♂️, have a domain name
@@ -201,11 +204,7 @@ procedure without it.
 The problem? The current Cloudflare provider doesn't support the creation of remotely-managed tunnels, only locally managed ones. So
 every time you try to deploy the resources via terraform, you get errors like `Authentication error (10000)`.
 
-Luckily, Cloudflare has an API with full support to both types of connectors. So we are using the API instead ([docs](TODO-LINK-API-DOCS))
+Luckily, Cloudflare has an API with full support to both types of connectors. So we are using the API instead ([tunnel](https://developers.cloudflare.com/api/operations/cloudflare-tunnel-create-a-cloudflare-tunnel) and [route](https://developers.cloudflare.com/api/operations/tunnel-route-create-a-tunnel-route) docs)
 
 If you a curious about what the terraform setup would look like, you can check the `terraform` branch of this repo.
 The code will be there in the `tf/` directory
-
-----
-
-extensive tutorial: https://programmingpercy.tech/blog/free-secure-self-hosting-using-cloudflare-tunnels/
